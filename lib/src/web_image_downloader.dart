@@ -3,7 +3,8 @@ import 'dart:typed_data';
 import 'package:flutter/painting.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_downloader_web/src/image_type.dart';
-import 'package:universal_html/html.dart' as html;
+// import 'package:universal_html/html.dart' as html;
+import 'package:web/web.dart' as web;
 
 class WebImageDownloader {
   /// Download image from URL to user's device. It works only for Flutter web.
@@ -40,10 +41,13 @@ class WebImageDownloader {
   }) async {
     final image = await decodeImageFromList(uInt8List);
 
-    final html.CanvasElement canvas = html.CanvasElement(
-      height: image.height,
-      width: image.width,
-    );
+    // final html.CanvasElement canvas = html.CanvasElement(
+    //   height: image.height,
+    //   width: image.width,
+    // );
+    web.HTMLCanvasElement canvas = web.HTMLCanvasElement();
+    canvas.height = image.height;
+    canvas.width = image.width;
 
     final ctx = canvas.context2D;
 
@@ -55,19 +59,26 @@ class WebImageDownloader {
     }
     final data = binaryString.join();
 
-    final base64 = html.window.btoa(data);
+    // final base64 = html.window.btoa(data);
+    //
+    // final img = html.ImageElement();
+    final base64 = web.window.btoa(data);
 
-    final img = html.ImageElement();
+    final img = web.HTMLImageElement();
 
     img.src = "data:${imageType.format};base64,$base64";
 
-    final html.ElementStream<html.Event> loadStream = img.onLoad;
+    // final html.ElementStream<html.Event> loadStream = img.onLoad;
+    final web.ElementStream<web.Event> loadStream = img.onLoad;
 
     loadStream.listen((event) {
       ctx.drawImage(img, 0, 0);
       final dataUrl = canvas.toDataUrl(imageType.format, imageQuality);
-      final html.AnchorElement anchorElement =
-          html.AnchorElement(href: dataUrl);
+      // final html.AnchorElement anchorElement =
+      //     html.AnchorElement(href: dataUrl);
+      final web.HTMLAnchorElement anchorElement =
+      web.HTMLAnchorElement();
+      anchorElement.href = dataUrl;
       anchorElement.download = name ?? dataUrl;
       anchorElement.click();
     });
